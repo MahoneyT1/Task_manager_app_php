@@ -3,20 +3,26 @@
 // This file contains database connection class
 
 
-class Database {
+class DBStorage {
 	private $host = 'localhost';
-	private $db_name = "mydatabase";
-	private $username = "root";
-	private $password = "";
+	private $db_name = "task_manager_db";
+	private $username = "task_manager";
+	private $password = "Drew2325$$";
 	private $conn;
 
 	// connector method that connects the database
 	// with the dpo object
+
+	public function __construct()
+	{
+		// Create the connection as soon as the obj is created
+		self::create();
+	}
+	
 	public function create() {
 		$this->conn = null;
 
 		$dsn = 'mysql:host=' . $this->host . ';dbname=' . $this->db_name;
-
 		try {
 
 			// try to create the connection object with Pdo
@@ -37,5 +43,27 @@ class Database {
 		};
 
 		return $this->conn;
+	}
+
+	public function post($name, $completed=false ) {
+
+		// check if the params are provided
+		if (!$name ) {
+			throw new InvalidArgumentException("Name parameter is required");
+		}
+
+		$stmt = $this->conn->prepare("INSERT INTO tasks ( name, completed ) 
+				VALUES ( :name, :completed ) ");
+		
+		try {
+			$stmt->execute(
+				[
+					":name" => $name,
+					"completed" => $completed
+				]
+			);
+		} catch (PDOException $e) {
+			throw new Exception(" Database write failed: " . $e->getMessage());
+		}
 	}
 }
