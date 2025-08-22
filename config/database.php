@@ -64,6 +64,25 @@ class DBStorage {
 			);
 		} catch (PDOException $e) {
 			throw new Exception(" Database write failed: " . $e->getMessage());
+		};
+	}
+
+	public function getTaskWithId($id) {
+
+		$stmt = $this->conn->prepare("SELECT * FROM tasks WHERE id = (:id)");
+		
+		try {
+
+			$stmt->execute(
+				[
+					":id" => $id
+				]
+				);
+		} catch (PDOException $e) {
+			throw new Exception(
+				"failed to get data from the database" . $e->getMessage());
 		}
 	}
+
+	
 }
