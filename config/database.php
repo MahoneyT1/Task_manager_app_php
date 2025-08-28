@@ -3,12 +3,16 @@
 // This file contains database connection class
 
 
+
+
 class DBStorage {
 	private $host = 'localhost';
 	private $db_name = "task_manager_db";
 	private $username = "task_manager";
 	private $password = "Drew2325$$";
 	private $conn;
+	private $limit = 10;
+	
 
 	// connector method that connects the database
 	// with the dpo object
@@ -83,6 +87,30 @@ class DBStorage {
 				"failed to get data from the database" . $e->getMessage());
 		}
 	}
+	function delete($id) {
+		// deleted a tast from the system
+		try {
+			$task_to_delete = $this->getTaskWithId($id);
+			$stmt = $this->conn->prepare("DELETE FROM tasks WHERE id = task_to_delete");
+			$stmt->execute(["id" => "$task_to_delete"]);
+
+		} catch (PDOException $e) {
+			throw new Exception($e);
+		}
+	}
+	function listAllTask(){
+		
+		try {
+			$stmt = $this->conn->prepare("SELECT * FROM tasks");
+			$stmt->execute();
+			$tasks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		} catch (PDOException $e) {
+			throw new Exception($e);
+		}
+
+		return $tasks;
+	}
+
 
 	
 }
