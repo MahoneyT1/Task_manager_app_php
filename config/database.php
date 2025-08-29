@@ -3,8 +3,6 @@
 // This file contains database connection class
 
 
-
-
 class DBStorage {
 	private $host = 'localhost';
 	private $db_name = "task_manager_db";
@@ -13,16 +11,14 @@ class DBStorage {
 	private $conn;
 	private $limit = 10;
 	
-
 	// connector method that connects the database
 	// with the dpo object
-
 	public function __construct()
 	{
 		// Create the connection as soon as the obj is created
 		self::create();
 	}
-	
+
 	public function create() {
 		$this->conn = null;
 
@@ -98,19 +94,29 @@ class DBStorage {
 			throw new Exception($e);
 		}
 	}
-	function listAllTask(){
-		
+	function listAllTask($page = 1){
+		$offset = ($page - 1) * $this->limit;
+
+		$totalQuery = $this->conn->query("SELECT COUNT(*) FROM tasks");
+		$totalRecord = $totalQuery->fetchColumn();
+		$totalPages = ceil($totalRecord / $this->limit);
+
 		try {
-			$stmt = $this->conn->prepare("SELECT * FROM tasks");
+			$stmt = $this->conn->prepare("SELECT * FROM tasks LIMIT :limit OFFSET :offset");
+			$stmt->bindParam(':limit', $this->limit, PDO::PARAM_INT);
+			$stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
 			$stmt->execute();
-			$tasks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+			$tasks = $stmt->fetchALL(PDO::FETCH_ASSOC);
+
+			return [
+				"data" => $tasks,
+				"totalRecords" => $totalRecord,
+				"totalPages" => $totalPages,
+				"currentPage" => $page
+			];
+
 		} catch (PDOException $e) {
 			throw new Exception($e);
 		}
-
-		return $tasks;
 	}
-
-
-	
 }

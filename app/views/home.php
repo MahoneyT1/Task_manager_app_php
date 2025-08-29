@@ -15,6 +15,7 @@ $storage = new DBStorage();
 $allTasks = $storage->listAllTask();
 
 $cleanedData = [];
+$results = [];
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
@@ -24,8 +25,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $postDataList = ["name" => $name, "completed" => $completed];
 
     $cleanedData = cleanData($postDataList);
-
 } else if ($_SERVER["REQUEST_METHOD"] === "GET") {
+    // check if the page number was passing in the query
+    $page = isset($_SERVER['page']) ? (int)$_GET['page'] : 1;
 
     if (isset($_SERVER["id"])) {
 
@@ -41,12 +43,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         // fetch all task from db
         try {
             $tasks = $storage->listAllTask();
+            $results = $tasks['data'];
         } catch (PDOException $e) {
             echo "Error occured" . $e;
         }
     }
 }
-
 
 ?>
 
@@ -77,22 +79,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         <a href="">Delete task</a>
     </div>
 
-    <div id="taskList" style="display: none;" class="w-55">
-        <h1>Task List</h1>
-
-        <ul class="w-100 bg-danger">
-            <?php if (!empty($allTasks)): ?>
-                <?php foreach ($allTasks as $task): ?>
-                    <li class="w-50">
-                        <?php echo htmlspecialchars($task['name']); ?>
-                    </li>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <li>No tasks found.</li>
-            <?php endif; ?>
-        </ul>
-    </div>
-
     <div class="d-flex flex-column w-100 p-2 text-center">
         <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="post"
             class="w-100 d-flex flex-column justify-content-center p-3 gap-3">
@@ -110,6 +96,22 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             <button class="btn btn-primary flex-1">Create task</button>
         </form>
+    </div>
+
+    <div id="taskList" style="display: none;" class="w-55">
+        <h1>Task List</h1>
+
+        <ul class="w-100 bg-danger">
+            <?php if (!empty($results)): ?>
+                <?php foreach ($results as $task): ?>
+                    <li class="w-50">
+                        <?php echo htmlspecialchars($task['name']); ?>
+                    </li>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <li>No tasks found.</li>
+            <?php endif; ?>
+        </ul>
     </div>
 
     <?php
